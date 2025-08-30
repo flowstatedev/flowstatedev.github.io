@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Instructions for garmin-disable.alerts.py</title>
+
+  <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/cover/">
+
+  <!-- Bootstrap core CSS -->
+  <link href="bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="cover.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <div class="cover-container d-flex h-100 p-3 mx-auto flex-column hidden">
+    <header class="masthead mb-auto">
+      <div class="inner">
+        <h3 class="masthead-brand">Instructions for garmin-disable.alerts.py</h3>
+      </div>
+    </header>
+
+    <main role="main" class="inner cover">
+      <h1 class="cover-heading"></h1>
+      <p class="lead">⚠️ Instead of using this script, I recommend using the corresponding website instead: <a
+          href="https://flowstatedev.github.io/no-ghosts/">https://flowstatedev.github.io/no-ghosts/</a>. It's a lot
+        easier.</p>
+      <br>
+      <div>
+        <h3><strong></strong><strong>The TL;DR for tech nerds:</strong></h3>
+        <p>0) If you're on Windows, install <a href="https://www.python.org/downloads/">python</a>. If you're on Mac,
+          install&nbsp;<a href="https://openmtp.ganeshrvel.com/">https://openmtp.ganeshrvel.com/</a>&nbsp;</p>
+        <p>1) <code>pip3 install fitdecode</code></p>
+        <p>2) Download&nbsp;<a
+            href="https://gist.githubusercontent.com/flowstatedev/541c2433492fb8c07873236ce1086c62/raw/164d61db649245485d85658388e4308e35074ba8/disable-garmin-alerts.py">garmin-disable-alerts.py</a>&nbsp;
+        </p>
+        <p>3) Copy activity profile from \Garmin<strong>\Sports </strong>folder on watch - e.g. RunningRun.fit</p>
+        <p>(mac users need openmtp to access files&nbsp;on the watch)</p>
+        <p>4)&nbsp;<code>python3 garmin-disable-alerts.py RunningRun.fit</code></p>
+        <p>5) Copy updated profile to \Garmin\<strong>Newfiles</strong> on watch</p>
+      </div>
+
+      <hr>
+
+      <div>
+        <h3><strong></strong><strong>The long version:</strong></h3>
+        <details>
+          <p><strong>Setup:</strong></p>
+          <p><strong>A. [Windows only] Install Python 3</strong></p>
+          <p>Go to&nbsp;<a href="https://www.python.org/downloads/">https://www.python.org/downloads/</a>, download the
+            latest version and install it.</p>
+          <p>(Macs already have python 3 out of the box)</p>
+          <p><strong>B. [Mac only] Get OpenMTP</strong></p>
+          <p>Macs can't access files on modern Garmin devices out of the box - 3rd-party software like OpenMTP is
+            required
+          </p>
+          <p>Download and install <a href="https://openmtp.ganeshrvel.com/">https://openmtp.ganeshrvel.com/</a>&nbsp;
+          </p>
+          <p><strong>C. Install fitdecode library</strong></p>
+          <p>C1. Open the terminal / command prompt</p>
+          <p>Windows: press Win-R to open the Run dialog, type "cmd", and press ENTER</p>
+          <p>Mac: open Terminal.app</p>
+          <p>C2. Type the following commands:</p>
+          <p>Windows:</p>
+          <p><code>pip3 install fitdecode</code></p>
+          <p>Mac:</p>
+          <p><code>cd "~/Desktop"</code></p>
+          <p><code></code><code>python3 -m venv&nbsp;<span>fitenv</span></code></p>
+          <p><code>source fitenv/bin/activate</code></p>
+          <p><code><span>pip3 install fitdecode</span></code></p>
+          <p><strong>D. Get the script for disabling alerts</strong></p>
+          <p>- Open <a
+              href="https://gist.githubusercontent.com/flowstatedev/541c2433492fb8c07873236ce1086c62/raw/164d61db649245485d85658388e4308e35074ba8/disable-garmin-alerts.py">garmin-disable-alerts.py</a>
+          </p>
+          <p>- Press CTRL-S (Windows) / CMD-S (Mac) and save it to your<strong> desktop</strong></p>
+
+          <p><strong>Usage:</strong></p>
+          <p><strong>E. Copy the activity profile which has ghost alerts from your watch to your computer</strong></p>
+          <p>E1. Close Garmin Express completely</p>
+          <p>Windows: Close Garmin Express and close the Garmin icon in your system tray</p>
+          <p>Mac: Close Garmin Express (CMD-Q) and close the Garmin icon in your menu bar</p>
+          <p>E2. Plug your watch into your computer</p>
+          <p>E3. Access the files and folders of your watch on your computer</p>
+          <p>Windows: open File Explorer and navigate to your Garmin watch (it will appear as a drive named after your
+            watch, like "Forerunner 955")</p>
+          <p>Mac:&nbsp;open OpenMTP</p>
+          <p>E4. Navigate to the \Garmin\Sports folder on your watch</p>
+          <p>This folder contains all the activity profiles on your watch, such as Run, Cycling, etc, as FIT
+            files.&nbsp;e.g. The&nbsp;Run&nbsp;profile is named RunningRun.fit.</p>
+          <p>Copy the profile&nbsp;of interest&nbsp;to your <strong>desktop</strong>.&nbsp;</p>
+          <p><strong>F. Run the script to disable alerts in your activity profile</strong></p>
+          <p>F1. Open the terminal / command prompt</p>
+          <p>Windows: press Win-R to open the Run dialog, type "cmd", and press ENTER</p>
+          <p>Mac: open Terminal.app</p>
+          <p>F2. Navigate to your <strong>desktop </strong>- type the following command(s):</p>
+          <p>Windows:</p>
+          <p><code>cd "%USERPROFILE\Desktop"</code></p>
+          <p>Mac:</p>
+          <p><code>cd "$HOME/Desktop"</code></p>
+          <p><code>source fitenv/bin/activate</code></p>
+          <p><code></code></p>
+          <p>F3. Run the script&nbsp;<span>- type the following command:</span></p>
+          <p><code>python3 garmin-disable-alerts.py <em>PROFILE_NAME</em>.fit</code></p>
+          <p>[replace <em>PROFILE_NAME</em> with the actual profile filename]</p>
+          <p>For example:</p>
+          <p><code>python3 garmin-disable-alerts.py RunningRun.fit</code></p>
+          <p><span>The script will look for enabled alerts and disable them. A backup file will be made (e.g
+              RunningRun-backup.fit), and the original file will be updated.</span></p>
+          <p><strong>G. Copy the updated profile file to \Garmin\Newfiles on your device</strong></p>
+          <p><span>Note: you must copy the updated file to \Garmin\<strong>Newfiles</strong>, *not*
+              \Garmin\Sports</span>
+          </p>
+          <p><strong>H. Unplug your watch&nbsp;</strong></p>
+          <p><strong>I. Enjoy the unparalleled satisfaction of going for a run without an annoying "Drink!" alert every
+              10
+              minutes 🏃🏻‍♂️🚫💧</strong></p>
+        </details>
+      </div>
+
+    </main>
+
+    <footer class="mastfoot mt-auto">
+      <div class="inner">
+        <p>Theme based on <a href="https://getbootstrap.com/docs/4.0/examples/cover/">Bootstrap Cover Template</a>, by
+          <a href="https://twitter.com/mdo">@mdo</a>.
+        </p>
+      </div>
+    </footer>
+  </div>
+
+
+</body>
+
+</html>

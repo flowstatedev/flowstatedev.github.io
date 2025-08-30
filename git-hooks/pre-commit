@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+SRC=src/no-ghosts
+
+if [[ `git status --porcelain "$SRC"` ]]; then
+  cd "$SRC"
+  npm run build
+fi
