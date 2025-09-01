@@ -1,0 +1,139 @@
+<%
+    // convert path with slashes like "/bunch/of/folders"
+    // to windows format if necessary ("\bunch\of\folders")
+    function convertPath(str) {
+        return isMac ? str : str.replace(/\//g, '\\');
+    }
+
+    let thisTabStepCount = 0;
+    let otherTabStepCount = 0;
+
+    function macStep() {
+        if (isMac) {
+            thisTabStepCount++;
+            return `<li>`;
+        } else {
+            otherTabStepCount++;
+            return '<!--';
+        }
+    }
+    function endMacStep() {
+        return isMac ? '</li>' : '-->';
+    }
+
+    function winStep() {
+        if (!isMac) {
+            thisTabStepCount++;
+            return `<li>`;
+        } else {
+            otherTabStepCount++
+            return '<!--';
+        }
+    }
+    function endWinStep() {
+        return !isMac ? '</li>' : '-->';
+    }
+
+    function step() {
+        otherTabStepCount++;
+        thisTabStepCount++;
+        return `<li>`;
+    }
+    function endStep() {
+        return '</li>';
+    }
+%>
+<ol>
+    <%- macStep() %>Download and install <a target="_blank" href="https://openmtp.ganeshrvel.com/">OpenMTP</a> <%- endMacStep() %>
+
+    <%- macStep() %>Close Garmin Express completely (CMD-Q). Close the Garmin icon in the menu bar<%- endMacStep() %>
+    <%- winStep() %>Close Garmin Express completely. Close the Garmin icon in the notification tray<%- endWinStep() %>
+
+    <%- step() %>Connect your Garmin device to your computer with the USB charging cable<%- endStep() %>
+
+    <%- step() %>Use <%= isMac ? 'OpenMTP' : 'File Explorer' %> to open the <b><%= convertPath('/Garmin/Sports') %></b> folder on your device<%- endStep() %>
+
+    <%- step() %>Copy a broken activity profile to your computer (e.g. <b>RunningRun.fit</b> or <b>Golf.fit</b>)<%- endStep() %>
+
+    <%- step() %>Select the file you copied below:<%- endStep() %>
+</ol>
+<p>
+    <div class="input-group upload-container">
+        <button type="button" class="btn btn-primary uploadButton">Select profile to fix...</button>
+        <span class="selectedFile form-control bg-light text-secondary"></span>
+    </div>
+</p>
+<div class="results">
+    <div class="fade result result-none">
+        <div class="alert alert-success" role="alert">
+            This profile doesn't have any enabled alerts
+        </div>
+    </div>
+    <div class="fade result result-laps-none">
+        <div class="alert alert-success" role="alert">
+            This profile doesn't have auto laps
+        </div>
+    </div>
+    <div class="fade result result-success">
+        <div class="alert alert-info" role="alert">
+            <!-- need initial content in .count to prevent page from jumping [*]-->
+            <p><span class="count">---</span></p>
+            <ol start="<%= thisTabStepCount+1 %>">
+            <%- step() %>Download updated profile: <a class="download">here</a> <%- endStep() %>
+
+            <%- step() %>Copy the updated profile to the <b><%= convertPath('/Garmin/NewFiles') %></b> folder on your device<%- endStep() %>
+            </ol>
+        </div>
+        <button type="button" class="btn btn-primary uploadButton">Fix another profile...</button>
+    </div>
+    <div class="fade result result-error">
+        <div class="alert alert-warning" role="alert"></div>
+    </div>
+    <div class="fade result result-error-not-profile">
+        <div class="alert alert-warning" role="alert">
+            This FIT file doesn't contain an alert message definition.
+            <b>Is this an activity profile with alerts?</b>
+            (Like <%= convertPath('/Garmin/Sports/RunningRun.fit') %>)
+        </div>
+    </div>
+    <div class="fade result result-laps-error-not-profile">
+        <div class="alert alert-warning" role="alert">
+            This FIT file doesn't contain training settings.
+            <b>Is this an activity profile?</b>
+            (Like <%= convertPath('/Garmin/Sports/Golf.fit') %>)
+        </div>
+    </div>
+    <div class="fade result result-error-not-profile-generic">
+        <div class="alert alert-warning" role="alert">
+            This FIT file is not an activity profile (which has a type of "sport").
+            This file's type is "<span class="fit-type"></span>".<br>
+            <b>Please select an activity profile.</b>
+            (Like <%= convertPath('/Garmin/Sports/RunningRun.fit') %>)
+        </div>
+    </div>
+    <div class="fade result result-laps-error-not-profile-generic">
+        <div class="alert alert-warning" role="alert">
+            This FIT file is not an activity profile (which has a type of "sport").
+            This file's type is "<span class="fit-type"></span>".<br>
+            <b>Please select an activity profile.</b>
+            (Like <%= convertPath('/Garmin/Sports/Golf.fit') %>)
+        </div>
+    </div>
+</div>
+<!-- placeholder to keep the number of p elements the same between both tabs.
+    this way the vertically centered main content stays the same height and doesn't
+    jump around on tab switch [*]
+
+    [*] these workarounds *might* break for super narrow displays
+    like a phone, but this is a site aimed at computers anyway.
+
+    would probably use a slightly different theme for narrow
+    media.
+-->
+<% if (thisTabStepCount < otherTabStepCount) { %>
+    <ol style="padding: 0; margin: 0;" class="invisible">
+    <% for (; thisTabStepCount < otherTabStepCount; thisTabStepCount++) { %>
+        <li>----</li>
+    <% } %>
+    </ol>
+<% } %>
