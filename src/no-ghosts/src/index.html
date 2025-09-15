@@ -18,7 +18,7 @@
     content="#333"
     media="(prefers-color-scheme: dark)" />
 
-  <title>Banish Garmin Ghost Alerts/Laps</title>
+  <title>Garmin FIT Tools</title>
   <link rel="icon" href="./favicon/favicon-16x16.png" type="image/png" sizes="16x16">
   <link rel="icon" href="./favicon/favicon-32x32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="./favicon/apple-touch-icon.png">
@@ -83,16 +83,27 @@
     </script>
     <header class="masthead mb-auto">
       <div class="inner">
-        <h3 class="masthead-brand no-ghosts-extra extra-target fade show">
-          <a href="#no-alerts" onclick="setTimeout(location.reload.bind(location), 1)">Banish Garmin Ghost Alerts 🚫 👻 ⚠️</a>
-        </h3>
-        <h3 class="masthead-brand no-laps-extra extra-target fade hidden">
-          <a href="#no-laps" onclick="setTimeout(location.reload.bind(location), 1)">Turn Off Golf Auto Laps 🚫 ⛳ 🏃‍♂️</a>
+        <h3 class="masthead-brand fade show">
+          <a href="">Garmin FIT Tools</a>
         </h3>
         <nav class="nav nav-masthead justify-content-center" role="tablist">
           <a id="no-ghosts-tab" class="nav-hash nav-link active" href="#no-alerts" data-bs-toggle="tab" data-bs-target=".no-ghosts" role="tab">Fix Ghost Alerts</a>
           <a id="no-laps-tab" class="nav-hash nav-link" href="#no-laps" data-bs-toggle="tab" data-bs-target=".no-laps" role="tab">Fix Ghost Laps</a>
+          <a id="metric-pool-tab" class="nav-hash nav-link" href="#metric-pool" data-bs-toggle="tab" data-bs-target=".metric-pool" role="tab">Change Pool Units</a>
         </nav>
+      </div>
+      <br>
+      <br>
+      <div>
+        <h4 class="masthead-brand no-ghosts-extra extra-target fade show">
+          Banish Ghost Alerts 🚫 👻 ⚠️
+        </h4>
+        <h4 class="masthead-brand no-laps-extra extra-target fade hidden">
+          Turn Off Golf Auto Laps 🚫 ⛳ 🏃‍♂️
+        </h4>
+        <h4 class="masthead-brand metric-pool-extra extra-target fade hidden">
+          Change Pool Swim Units To Metric 🏊‍♂️ 📏
+        </h4>
       </div>
     </header>
     <main role="main" class="inner cover fade" id="cover">
@@ -111,11 +122,20 @@
           <p><small><sup>1</sup> Golf is broken for some people, as automatic laps are enabled with no way to turn them off</small></p>
           <p><b>⚠️ Everything is done in the browser - no personal information is stored or transmitted.</b></p>
         </div>
+        <div class="mode metric-pool tab-pane fade">
+          <p class="lead">For pool swim activities: change pool size unit to metric, so you can
+            see your stats in metres.</p>
+          <p>This is useful if you swam in a 25 yds pool (for example), but
+            you would like to see your stats in metres. (For pool swim, the stats unit is determined by the pool size unit.)
+          </p>
+          <p>This will not change your pool size or actual value of any metrics, it will only change the display of your stats in Connect.</p>
+          <p><b>⚠️ Everything is done in the browser - no personal information is stored or transmitted.</b></p>
+        </div>
       </div>
       <div class="spacer"></div>
       <h4>Let's get started:</h4>
       <div>
-        <ul class="nav nav-min-tabs" id="osTab" role="tablist">
+        <ul class="nav nav-min-tabs no-ghosts-extra no-laps-extra extra-target fade show" id="osTab" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" id="windows-tab" data-bs-toggle="pill" data-bs-target="#windows"
               type="button" role="tab" aria-controls="windows" aria-selected="true">Windows</button>

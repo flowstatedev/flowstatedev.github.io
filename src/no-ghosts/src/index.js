@@ -122,6 +122,26 @@ class NotActivityProfileGenericError extends CustomError {
     this.fitType = fitType;
   }
 }
+
+/**
+ * thrown when the given file is a fit file, but not an activity profile,
+ * due to the wrong FIT file type (i.e. not 'sport')
+ */
+class NotActivityError extends CustomError {
+  /**
+   * 
+   * @param {string} message error message
+   * @param {string} fitType e.g. 'sport'
+   */
+  constructor(message, fitType) {
+    super(message);
+    // this.name = this.constructor.name;
+    this.name = 'NotActivityError';
+    /** @type {string} */
+    this.fitType = fitType;
+  }
+}
+
 class FITDecoderError extends CustomError {
   /**
    * 
@@ -650,6 +670,69 @@ function disableLaps(buffer) {
   }
 }
 
+/**
+ *
+ * @param {ArrayBuffer} buffer a buffer containing the FIT file to be edited
+ * @returns {number} number of alerts that were disabled
+ */
+function changePoolLengthUnitToMetric(buffer) {
+  // Message in profile
+  const sessionMsgNum = 18;
+
+  // Field in profile
+  // Type: 1 byte enum
+  // Values: 0 = metric, 1 = statute, 2 = nautical
+  const poolLengthUnitField = 46;
+
+  try {
+    const {
+      fitType,
+      numberOfEdits,
+    } = editFITFile(
+      buffer,
+      'activity',
+      [
+        new FITEditDefinition(
+          sessionMsgNum,
+          poolLengthUnitField,
+          1,
+          (val) => {
+            if (val === 0) {
+              console.log('pool length unit is already metric; doing nothing');
+              return null;
+            } else if (val === 1) {
+              console.log('pool length unit is statute, changing to metric');
+              return 0;
+            } else if (val === 2) {
+              console.warn('pool length unit is nautical (2) (???), changing to metric');
+              return 0;
+            } else {
+              console.warn(`pool length unit is invalid ${val}, changing to metric`);
+              return 0;
+            }
+          }
+        )
+      ]
+    );
+
+    // still too much duplicated code
+    if (fitType !== 'activity') 
+      throw new NotActivityError("Not an activity profile", fitType);
+    
+
+    return numberOfEdits;
+  } catch (e) {
+    if (e instanceof FITMessageNotFound) {
+      throw new CustomError(`Could not find definition for session message. Is this an activity FIT file?`);
+    }
+    if (e instanceof FITFieldNotFound) {
+      throw new CustomError(`Could not find definition for pool length field. Is this a pool swim activity FIT file?`);
+    }
+    throw e;
+  }
+}
+
+
 // ====================================================================================
 
 // clearly a lot of the code below is fragile asf because certain
@@ -699,53 +782,85 @@ async function onFileInputChangeImpl(input) {
     console.log(`Reading ${file.name}...`)
     const buffer = await file.arrayBuffer();
 
-    // const noGhosts = document.querySelector('.no-ghosts')
-    const noLaps = document.querySelector('.no-laps')
+    const actions = {
+      'noGhosts': document.querySelector('.no-ghosts'),
+      'noLaps': document.querySelector('.no-laps'),
+      'metricPool': document.querySelector('.metric-pool'),
+    };
 
-    const lapMode = (noLaps && noLaps.classList.contains('show'));
-    if (lapMode) {
-      console.log('Preparing to remove ghost laps from FIT file...')
-    } else {
-      console.log('Preparing to remove ghost alerts from FIT file...')
+    let selectedAction = "noGhosts";
+    for (const action in actions) {
+      const actionElement = actions[action];
+      if (actionElement && actionElement.classList.contains('show')) {
+        selectedAction = action;
+        break;
+      }
     }
 
     try {
-      if (lapMode) {
-        const turnedOffLaps = disableLaps(buffer);
-        console.log(turnedOffLaps ? 'auto laps were disabled' : 'auto laps were not disabled');
-        if (!turnedOffLaps) {
-          showResult('.result-laps-none');
-          return;
+      switch (selectedAction) {
+        case 'noGhosts': {
+          console.log('Preparing to remove ghost alerts from FIT file...')
+          const numBanishedAlerts = banishAlerts(buffer);
+          console.log(`disabled ${numBanishedAlerts} alerts`);
+
+          if (!numBanishedAlerts) {
+            showResult('.result-none');
+            return;
+          }
+          const numAlertsStr = numBanishedAlerts === 1 ? '1 alert' : `${numBanishedAlerts} alerts`;
+          /** @type {NodeListOf<HTMLSpanElement>} */
+          (document.querySelectorAll(".count")).forEach(el =>
+            el.innerText = `⚠️ Disabled ${numAlertsStr} in the selected profile`
+          );
+
+          break;
         }
+        case 'noLaps': {
+          console.log('Preparing to remove ghost laps from FIT file...')
+          const turnedOffLaps = disableLaps(buffer);
+          console.log(turnedOffLaps ? 'auto laps were disabled' : 'auto laps were not disabled');
+          if (!turnedOffLaps) {
+            showResult('.result-laps-none');
+            return;
+          }
 
-        /** @type {NodeListOf<HTMLSpanElement>} */
-        (document.querySelectorAll(".count")).forEach(el =>
-          el.innerText = `⚠️ Turned off auto laps in the selected profile`
-        );
-
-      } else {
-        const numBanishedAlerts = banishAlerts(buffer);
-        console.log(`disabled ${numBanishedAlerts} alerts`);
-
-        if (!numBanishedAlerts) {
-          showResult('.result-none');
-          return;
+          /** @type {NodeListOf<HTMLSpanElement>} */
+          (document.querySelectorAll(".count")).forEach(el =>
+            el.innerText = `⚠️ Turned off auto laps in the selected profile`
+          );
+          break;
         }
-        const numAlertsStr = numBanishedAlerts === 1 ? '1 alert' : `${numBanishedAlerts} alerts`;
-        /** @type {NodeListOf<HTMLSpanElement>} */
-        (document.querySelectorAll(".count")).forEach(el =>
-          el.innerText = `⚠️ Disabled ${numAlertsStr} in the selected profile`
-        );
+        case 'metricPool': {
+          console.log('Preparing to change pool length unit to metric, in FIT file...')
+          const numEdits = changePoolLengthUnitToMetric(buffer)
+          console.log(numEdits ? 'pool length units were changed' : 'pool length units were not changed');
+          if (numEdits === 0) {
+            showResult('.result-pool-none');
+            return;
+          }
+
+          /** @type {NodeListOf<HTMLSpanElement>} */
+          (document.querySelectorAll(".count")).forEach(el =>
+            el.innerText = `⚠️ Changed pool length units to metric, in the selected activity`
+          );
+          break;
+        }
       }
     } catch (/** @type {any} */ e) {
       // TODO: clean up this mess
       if (e instanceof NotActivityProfileError) {
-        showResult(lapMode ? '.result-laps-error-not-profile' : '.result-error-not-profile');
+        showResult(selectedAction === 'noLaps' ? '.result-laps-error-not-profile' : '.result-error-not-profile');
+      } else if (e instanceof NotActivityError) {
+        /** @type {NodeListOf<HTMLSpanElement>} */
+        const fitTypeEl = document.querySelectorAll(".fit-type");
+        fitTypeEl.forEach(el => el.innerText = e.fitType);
+        showResult('.result-error-not-activity');
       } else if (e instanceof NotActivityProfileGenericError) {
         /** @type {NodeListOf<HTMLSpanElement>} */
         const fitTypeEl = document.querySelectorAll(".fit-type");
         fitTypeEl.forEach(el => el.innerText = e.fitType);
-        showResult(lapMode ? '.result-laps-error-not-profile-generic' : '.result-error-not-profile-generic');
+        showResult(selectedAction === 'noLaps' ? '.result-laps-error-not-profile-generic' : '.result-error-not-profile-generic');
       } else {
         console.error(e);
         showResult('.result-error', e);

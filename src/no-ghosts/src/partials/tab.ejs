@@ -8,6 +8,8 @@
     let thisTabStepCount = 0;
     let otherTabStepCount = 0;
 
+    let poolStepCount = 0;
+
     function macStep() {
         if (isMac) {
             thisTabStepCount++;
@@ -43,7 +45,7 @@
         return '</li>';
     }
 %>
-<ol>
+<ol class="no-ghosts-extra no-laps-extra extra-target fade show">
     <%- macStep() %>Download and install <a target="_blank" href="https://openmtp.ganeshrvel.com/">OpenMTP</a> <%- endMacStep() %>
 
     <%- macStep() %>Close Garmin Express completely (CMD-Q). Close the Garmin icon in the menu bar<%- endMacStep() %>
@@ -57,9 +59,25 @@
 
     <%- step() %>Select the file you copied below:<%- endStep() %>
 </ol>
+<ol class="metric-pool-extra extra-target fade hidden">
+    <li><% poolStepCount++ %>Open <a href="https://connect.garmin.com">https://connect.garmin.com</a> and login</li>
+    <li><% poolStepCount++ %>Navigate to the pool swim activity you want to change</li>
+    <li><% poolStepCount++ %>Click the gear icon (upper-right) > Export File. (This will download your activity FIT file inside of a .ZIP)</li>
+    <li><% poolStepCount++ %>
+        Find the downloaded ZIP file on your computer and extract the FIT file.<br>
+        <a href="https://support.microsoft.com/en-us/windows/zip-and-unzip-files-8d28fa72-f2f9-712f-67df-f80cf89fd4e5">
+            Windows instructions
+        </a>
+        |
+        <a href="https://support.apple.com/en-ca/guide/mac-help/mchlp2528/mac">
+            Mac instructions
+        </a>
+    </li>
+    <li><% poolStepCount++ %>Select the extracted FIT file below</li>
+</ol>
 <p>
     <div class="input-group upload-container">
-        <button type="button" class="btn btn-primary uploadButton">Select profile to fix...</button>
+        <button type="button" class="btn btn-primary uploadButton">Select FIT file to fix...</button>
         <span class="selectedFile form-control bg-light text-secondary"></span>
     </div>
 </p>
@@ -74,14 +92,25 @@
             This profile doesn't have auto laps
         </div>
     </div>
+    <div class="fade result result-pool-none">
+        <div class="alert alert-success" role="alert">
+            This activity's pool length unit is already metric
+        </div>
+    </div>
     <div class="fade result result-success">
         <div class="alert alert-info" role="alert">
             <!-- need initial content in .count to prevent page from jumping [*]-->
             <p><span class="count">---</span></p>
-            <ol start="<%= thisTabStepCount+1 %>">
+            <ol start="<%= thisTabStepCount+1 %>" class="no-ghosts-extra no-laps-extra extra-target fade show">
             <%- step() %>Download updated profile: <a class="download">here</a> <%- endStep() %>
 
             <%- step() %>Copy the updated profile to the <b><%= convertPath('/Garmin/NewFiles') %></b> folder on your device<%- endStep() %>
+            </ol>
+            <ol start="<%= poolStepCount+1 %>" class="metric-pool-extra extra-target fade show">
+                <li><% poolStepCount++ %>Download updated activity: <a class="download">here</a> </li>
+                <li><% poolStepCount++ %>Go to connect.garmin.com</a> </li>
+                <li><% poolStepCount++ %>Delete the original activity</a> </li>
+                <li><% poolStepCount++ %>Import the updated activity</a> </li>
             </ol>
         </div>
         <button type="button" class="btn btn-primary uploadButton">Fix another profile...</button>
@@ -117,6 +146,13 @@
             This file's type is "<span class="fit-type"></span>".<br>
             <b>Please select an activity profile.</b>
             (Like <%= convertPath('/Garmin/Sports/Golf.fit') %>)
+        </div>
+    </div>
+    <div class="fade result result-error-not-activity">
+        <div class="alert alert-warning" role="alert">
+            This is not an activity FIT file (which has a type of "activity").
+            This file's type is "<span class="fit-type"></span>".<br>
+            <b>Please select an activity FIT file.</b>
         </div>
     </div>
 </div>
