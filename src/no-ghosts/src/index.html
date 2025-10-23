@@ -89,7 +89,8 @@
         <nav class="nav nav-masthead justify-content-center" role="tablist">
           <a id="no-ghosts-tab" class="nav-hash nav-link active" href="#no-alerts" data-bs-toggle="tab" data-bs-target=".no-ghosts" role="tab">Fix Ghost Alerts</a>
           <a id="no-laps-tab" class="nav-hash nav-link" href="#no-laps" data-bs-toggle="tab" data-bs-target=".no-laps" role="tab">Fix Ghost Laps</a>
-          <a id="metric-pool-tab" class="nav-hash nav-link" href="#metric-pool" data-bs-toggle="tab" data-bs-target=".metric-pool" role="tab">Change Pool Units</a>
+          <!-- <a id="metric-pool-tab" class="nav-hash nav-link" href="#metric-pool" data-bs-toggle="tab" data-bs-target=".metric-pool" role="tab">Change Pool Units</a> -->
+          <a id="autolock-tab" class="nav-hash nav-link" href="#autolock" data-bs-toggle="tab" data-bs-target=".autolock" role="tab">Auto-Lock</a>
         </nav>
       </div>
       <br>
@@ -103,6 +104,9 @@
         </h4>
         <h4 class="masthead-brand metric-pool-extra extra-target fade hidden">
           Change Pool Swim Units To Metric 🏊‍♂️ 📏
+        </h4>
+        <h4 class="masthead-brand autolock-extra extra-target fade hidden">
+          Enable or Disable Auto-Lock 🔒
         </h4>
       </div>
     </header>
@@ -131,11 +135,31 @@
           <p>This will not change your pool size or actual value of any metrics, it will only change the display of your stats in Connect.</p>
           <p><b>⚠️ Everything is done in the browser - no personal information is stored or transmitted.</b></p>
         </div>
+        <div class="mode autolock tab-pane fade">
+          <p class="lead">Enable or disable auto-lock, for newer devices like Fenix 8 where the setting has been removed, but the feature *apparently* still exists.</p>
+          <p>This is useful if:</p>
+          <ul>
+            <li>You've restored settings from a backup where auto-lock is enabled and you want to disable it</li>
+            <li>You want to enable auto-lock</li>
+          </ul>
+          <p>Notes:</p>
+          <ul>
+            <li>I don't own a Fenix 8, so I can't guarantee this will work, but there's a good chance (see following points)</li>
+            <li>
+              Garmin forum users have reported that restoring a backup to Fenix 8 - from an older device where the auto-lock setting was enabled -
+              causes the auto-lock feature to be enabled on their Fenix 8
+            </li>
+            <li>
+              It's reasonable to assume that Fenix 8 still has the auto-lock functionality under the covers, even though the setting has been removed
+            </li>
+          </ul>
+          <p><b>⚠️ Everything is done in the browser - no personal information is stored or transmitted.</b></p>
+        </div>
       </div>
       <div class="spacer"></div>
       <h4>Let's get started:</h4>
       <div>
-        <ul class="nav nav-min-tabs no-ghosts-extra no-laps-extra extra-target fade show" id="osTab" role="tablist">
+        <ul class="nav nav-min-tabs no-ghosts-extra no-laps-extra autolock-extra extra-target fade show" id="osTab" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" id="windows-tab" data-bs-toggle="pill" data-bs-target="#windows"
               type="button" role="tab" aria-controls="windows" aria-selected="true">Windows</button>

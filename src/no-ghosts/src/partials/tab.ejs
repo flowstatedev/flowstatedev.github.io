@@ -5,17 +5,26 @@
         return isMac ? str : str.replace(/\//g, '\\');
     }
 
-    let thisTabStepCount = 0;
-    let otherTabStepCount = 0;
+    function idSuffix() {
+        return isMac ? "_mac" : "_windows"
+    }
+
+    function tabName() {
+        return isMac ? "mac" : "windows"
+    }
+
+    let thisTabStepCountObj = {};
+    let otherTabStepCountObj = {};
 
     let poolStepCount = 0;
 
-    function macStep() {
+    function macStep(id) {
+        id = id || "default"
         if (isMac) {
-            thisTabStepCount++;
+            thisTabStepCountIncrement(id)
             return `<li>`;
         } else {
-            otherTabStepCount++;
+            otherTabStepCountIncrement(id)
             return '<!--';
         }
     }
@@ -23,12 +32,13 @@
         return isMac ? '</li>' : '-->';
     }
 
-    function winStep() {
+    function winStep(id) {
+        id = id || "default"
         if (!isMac) {
-            thisTabStepCount++;
+            thisTabStepCountIncrement(id)
             return `<li>`;
         } else {
-            otherTabStepCount++
+            otherTabStepCountIncrement(id)
             return '<!--';
         }
     }
@@ -36,13 +46,34 @@
         return !isMac ? '</li>' : '-->';
     }
 
-    function step() {
-        otherTabStepCount++;
-        thisTabStepCount++;
+    function step(id) {
+        id = id || "default"
+
+        thisTabStepCountIncrement(id)
+        otherTabStepCountIncrement(id)
         return `<li>`;
     }
     function endStep() {
         return '</li>';
+    }
+
+    function thisTabStepCount(id) {
+        id = id || "default"
+        return thisTabStepCountObj[id] || 0
+    }
+    function thisTabStepCountIncrement(id) {
+        id = id || "default"
+        thisTabStepCountObj[id] = thisTabStepCountObj[id] || 0
+        thisTabStepCountObj[id]++
+    }
+    function otherTabStepCount(id) {
+        id = id || "default"
+        return otherTabStepCountObj[id] || 0
+    }
+    function otherTabStepCountIncrement(id) {
+        id = id || "default"
+        otherTabStepCountObj[id] = otherTabStepCountObj[id] || 0
+        otherTabStepCountObj[id]++
     }
 %>
 <ol class="no-ghosts-extra no-laps-extra extra-target fade show">
@@ -75,12 +106,36 @@
     </li>
     <li><% poolStepCount++ %>Select the extracted FIT file below</li>
 </ol>
-<p>
-    <div class="input-group upload-container">
-        <button type="button" class="btn btn-primary uploadButton">Select FIT file to fix...</button>
-        <span class="selectedFile form-control bg-light text-secondary"></span>
-    </div>
-</p>
+<ol class="autolock-extra extra-target fade show">
+    <%- macStep('autolock') %>Download and install <a target="_blank" href="https://openmtp.ganeshrvel.com/">OpenMTP</a> <%- endMacStep() %>
+
+    <%- macStep('autolock') %>Close Garmin Express completely (CMD-Q). Close the Garmin icon in the menu bar<%- endMacStep() %>
+    <%- winStep('autolock') %>Close Garmin Express completely. Close the Garmin icon in the notification tray<%- endWinStep() %>
+
+    <%- step('autolock') %>Connect your Garmin device to your computer with the USB charging cable<%- endStep() %>
+
+    <%- step('autolock') %>Use <%= isMac ? 'OpenMTP' : 'File Explorer' %> to open the <b><%= convertPath('/Garmin/Settings') %></b> folder on your device<%- endStep() %>
+
+    <%- step('autolock') %>Copy Settings.fit to your computer<%- endStep() %>
+
+    <%- step('autolock') %>Select the file you copied below:<%- endStep() %>
+</ol>
+<div class="no-ghosts-extra no-laps-extra extra-target metric-pool-extra fade show">
+    <p>
+        <div class="input-group upload-container">
+            <button type="button" class="btn btn-primary uploadButton">Select FIT file to fix...</button>
+            <span class="selectedFile form-control bg-light text-secondary"></span>
+        </div>
+    </p>
+</div>
+<div class="autolock-extra extra-target fade hidden">
+    <p>
+        <div class="input-group upload-container">
+            <button type="button" class="btn btn-primary uploadButton">Select Settings.fit file...</button>
+            <span class="selectedFile form-control bg-light text-secondary"></span>
+        </div>
+    </p>
+</div>
 <div class="results">
     <div class="fade result result-none">
         <div class="alert alert-success" role="alert">
@@ -100,8 +155,8 @@
     <div class="fade result result-success">
         <div class="alert alert-info" role="alert">
             <!-- need initial content in .count to prevent page from jumping [*]-->
-            <p><span class="count">---</span></p>
-            <ol start="<%= thisTabStepCount+1 %>" class="no-ghosts-extra no-laps-extra extra-target fade show">
+            <p><span class="count">&nbsp;</span></p>
+            <ol start="<%= thisTabStepCount()+1 %>" class="no-ghosts-extra no-laps-extra extra-target fade show">
             <%- step() %>Download updated profile: <a class="download">here</a> <%- endStep() %>
 
             <%- step() %>Copy the updated profile to the <b><%= convertPath('/Garmin/NewFiles') %></b> folder on your device<%- endStep() %>
@@ -112,8 +167,46 @@
                 <li><% poolStepCount++ %>Delete the original activity</a> </li>
                 <li><% poolStepCount++ %>Import the updated activity</a> </li>
             </ol>
+            <div class="autolock-extra extra-target fade hidden autolock-<%= tabName() %>">
+                <ol start="<%= thisTabStepCount('autolock')+1 %>">
+                    <li>
+                        Select a new Auto-Lock setting:
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input autolockRadio autolockRadio0" type="radio" name="autolockRadio" value="0" data-tabname="<%= tabName() %>" data-apply="#autolockApply<%= idSuffix() %>">
+                                Off
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input autolockRadio autolockRadio1" type="radio" name="autolockRadio" value="1" data-tabname="<%= tabName() %>" data-apply="#autolockApply<%= idSuffix() %>">
+                                Always
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input autolockRadio autolockRadio2" type="radio" name="autolockRadio" value="2" data-tabname="<%= tabName() %>" data-apply="#autolockApply<%= idSuffix() %>">
+                                During Activity
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <label class="form-check-label">
+                                <input class="form-check-input autolockRadio autolockRadio3" type="radio" name="autolockRadio" value="3" data-tabname="<%= tabName() %>" data-apply="#autolockApply<%= idSuffix() %>">
+                                Not During Activity
+                            </label>
+                        </div>
+                    </li>
+                    <li>
+                        <button type="button" class="btn btn-primary autolockApply disabled" data-tabname="<%= tabName() %>" id="autolockApply<%= idSuffix() %>">Apply Changes...</button>
+                    </li>
+                    <li class="autolock-finish fade hidden">Download updated settings file: <a class="autolock-download">here</a></li>
+                    <li class="autolock-finish fade hidden">Copy the updated settings file to the <b><%= convertPath('/Garmin/NewFiles') %></b> folder on your device</li>
+                </ol>
+
+            </div>
         </div>
-        <button type="button" class="btn btn-primary uploadButton">Fix another profile...</button>
+        <button type="button" class="btn btn-primary uploadButton no-ghosts-extra no-laps-extra metric-pool-extra extra-target fade show">Fix another profile...</button>
+        <!-- <button type="button" class="btn btn-primary uploadButton autolock-extra extra-target fade hidden">Change another settings file...</button> -->
     </div>
     <div class="fade result result-error">
         <div class="alert alert-warning" role="alert"></div>
@@ -166,9 +259,16 @@
     would probably use a slightly different theme for narrow
     media.
 -->
-<% if (thisTabStepCount < otherTabStepCount) { %>
-    <ol style="padding: 0; margin: 0;" class="invisible">
-    <% for (; thisTabStepCount < otherTabStepCount; thisTabStepCount++) { %>
+<% if (thisTabStepCount() < otherTabStepCount()) { %>
+    <ol style="padding: 0; margin: 0;" class="invisible no-ghosts-extra no-laps-extra extra-target show">
+    <% for (; thisTabStepCount() < otherTabStepCount(); thisTabStepCountIncrement()) { %>
+        <li>----</li>
+    <% } %>
+    </ol>
+<% } %>
+<% if (thisTabStepCount('autolock') < otherTabStepCount('autolock')) { %>
+    <ol style="padding: 0; margin: 0;" class="invisible autolock-extra extra-target hidden">
+    <% for (; thisTabStepCount('autolock') < otherTabStepCount('autolock'); thisTabStepCountIncrement('autolock')) { %>
         <li>----</li>
     <% } %>
     </ol>

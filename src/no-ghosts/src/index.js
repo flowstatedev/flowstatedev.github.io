@@ -716,9 +716,9 @@ function changePoolLengthUnitToMetric(buffer) {
     );
 
     // still too much duplicated code
-    if (fitType !== 'activity') 
+    if (fitType !== 'activity') {
       throw new NotActivityError("Not an activity profile", fitType);
-    
+    }
 
     return numberOfEdits;
   } catch (e) {
@@ -731,6 +731,83 @@ function changePoolLengthUnitToMetric(buffer) {
     throw e;
   }
 }
+
+/**
+ *
+ * @param {ArrayBuffer} buffer a buffer containing the FIT file to be edited
+ * @param {number|null} editVal 
+ * @returns {number|null} current setting 
+ */
+function readOrEditAutoLockSetting(buffer, editVal) {
+  // Message in profile - device settings
+  const deviceSettingsMsgNum = 2;
+
+  // Field in profile
+  // Type: 1 byte enum
+  /* Values: 
+    0 - autolock off
+    1 - always
+    2 - during activity 
+    3 - not during actvity
+  */
+
+  const autolockSettingField = 135;
+  let fieldVal = null
+  try {
+    const {
+      fitType,
+      numberOfEdits,
+    } = editFITFile(
+      buffer,
+      'settings',
+      [
+        new FITEditDefinition(
+          deviceSettingsMsgNum,
+          autolockSettingField,
+          1,
+          (val) => {
+            if (editVal !== null) {
+              if (val !== editVal) {
+                fieldVal = editVal
+                console.log(`Changing auto-lock setting to ${editVal}`)
+                return editVal;
+              }
+            }
+
+            fieldVal = val
+            return null
+          }
+        )
+      ]
+    );
+
+    // still too much duplicated code
+    if (fitType !== 'settings') {
+      throw new CustomError(`This is not a settings FIT file, it's a FIT file with type '${fitType}'`);
+    }
+
+    if (fieldVal === null) {
+      throw new CustomError(`Could not find auto-lock field in FIT file`);
+    }
+
+    if (fieldVal !== null) {
+      if (typeof fieldVal !== 'number' || (fieldVal < 0 || fieldVal > 3)) {
+        throw new CustomError(`Unknown auto-lock value: '${fieldVal}'`);
+      }
+    }
+
+    return fieldVal;
+  } catch (e) {
+    if (e instanceof FITMessageNotFound) {
+      throw new CustomError(`Could not find definition for device settings message. Is this a settings FIT file?`);
+    }
+    if (e instanceof FITFieldNotFound) {
+      throw new CustomError(`Could not find definition for auto-lock setting field`);
+    }
+    throw e;
+  }
+}
+
 
 
 // ====================================================================================
@@ -760,6 +837,66 @@ function onFileInputChange() {
 }
 
 /**
+ * @this {HTMLInputElement}
+ */
+function onAutolockRadioChange() {
+  // console.log(this.value)
+  const applySelector = this.getAttribute("data-apply")
+  console.log(applySelector)
+  if (applySelector) {
+    const applyBtn = document.querySelector(applySelector)
+    // console.log(applyBtn)
+    if (applyBtn) {
+      applyBtn.removeAttribute("disabled")
+      applyBtn.classList.remove("disabled")
+    }
+    document.querySelectorAll(".autolock-finish").forEach((el) => {
+      el.classList.remove("show");
+      el.classList.add("hidden");
+    })
+  }
+}
+
+/** @type {ArrayBuffer|undefined} */
+let settingsFileBuffer
+/** @type {string|undefined} */
+let settingsFilename
+/**
+ * @this {HTMLButtonElement}
+ */
+function onAutolockApply() {
+  const tabname = this.getAttribute("data-tabname")
+  if (tabname) {
+    /** @type {HTMLInputElement|null} */
+    const radioInput = document.querySelector(`.autolock-${tabname} input[name='autolockRadio']:checked`)
+    if (radioInput && settingsFileBuffer && settingsFilename) {
+      // console.log(`radio value = ${radioInput.value}`)
+      const editVal = radioInput.value
+      console.log(`Preparing to change autolock setting in SETTINGS.FIT file to ${editVal}...`)
+      const fieldVal = readOrEditAutoLockSetting(settingsFileBuffer, parseInt(editVal, 10))
+      console.log(`new val = ${fieldVal}`)
+
+      /** @type {NodeListOf<HTMLAnchorElement>} */
+      const links = document.querySelectorAll(".autolock-download");
+      links.forEach(link => {
+        link.href = URL.createObjectURL(new Blob([settingsFileBuffer]));
+        const basenameAndExt = getBasenameAndExt(settingsFilename);
+        const newName = basenameAndExt ?
+          `${basenameAndExt[0]}-modified${basenameAndExt[1]}` :
+          settingsFilename;
+        link.innerText = newName;
+        link.download = newName;
+      })
+
+      document.querySelectorAll(".autolock-finish").forEach((el) => {
+        el.classList.remove("hidden");
+        el.classList.add("show");
+      })
+    }
+  }
+}
+
+/**
  * 
  * @param {HTMLInputElement} input input element which receives a FIT file to be fixed
  * @returns {Promise<void>}
@@ -786,6 +923,7 @@ async function onFileInputChangeImpl(input) {
       'noGhosts': document.querySelector('.no-ghosts'),
       'noLaps': document.querySelector('.no-laps'),
       'metricPool': document.querySelector('.metric-pool'),
+      'autolock': document.querySelector('.autolock'),
     };
 
     let selectedAction = "noGhosts";
@@ -845,6 +983,57 @@ async function onFileInputChangeImpl(input) {
             el.innerText = `⚠️ Changed pool length units to metric, in the selected activity`
           );
           break;
+        }
+        case 'autolock': {
+          console.log('Preparing to read autolock setting from SETTINGS.FIT file...')
+          const fieldVal = readOrEditAutoLockSetting(buffer, null)
+          settingsFileBuffer = buffer
+          settingsFilename = file.name
+          console.log(`autolock value = ${fieldVal}`)
+
+          let fieldStr = "";
+          switch (fieldVal) {
+            case 0:
+              fieldStr = "Off"
+              break;
+            case 1:
+              fieldStr = "Always"
+              break;
+            case 2:
+              fieldStr = "During Activity"
+              break;
+            case 3:
+              fieldStr = "Not During Activity"
+              break;
+            case 4:
+              fieldStr = "Unknown"
+              break;
+          }
+
+          /** @type {NodeListOf<HTMLSpanElement>} */
+          (document.querySelectorAll(".count")).forEach(el =>
+            // el.innerText = `Current Auto-Lock setting: ${fieldStr} (${fieldVal})`
+            el.innerText = `Current Auto-Lock setting: ${fieldStr}`
+          );
+
+          (document.querySelectorAll(".autolockRadio")).forEach(el => {
+            el.removeAttribute("disabled")
+            el.checked = false
+            el.addEventListener('click', onAutolockRadioChange)
+          });
+          (document.querySelectorAll(`.autolockRadio${fieldVal}`)).forEach(el =>
+            el.setAttribute("disabled", "disabled")
+          );
+          (document.querySelectorAll(".autolockApply")).forEach(el => {
+            el.setAttribute("disabled", "disabled")
+            el.addEventListener('click', onAutolockApply)
+          });
+          document.querySelectorAll(".autolock-finish").forEach((el) => {
+            el.classList.remove("show");
+            el.classList.add("hidden");
+          })
+          showResult('.result-success');
+          return;
         }
       }
     } catch (/** @type {any} */ e) {
