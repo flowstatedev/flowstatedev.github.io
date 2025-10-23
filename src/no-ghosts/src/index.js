@@ -298,7 +298,6 @@ function debugLog(...args) {
   isDebugging() && console.log(...args);
 }
 
-/* eslint-disable-next-line jsdoc/require-returns-check */
 /**
  * 
  * @param {ArrayBuffer} buffer FIT file data
@@ -735,7 +734,7 @@ function changePoolLengthUnitToMetric(buffer) {
 /**
  *
  * @param {ArrayBuffer} buffer a buffer containing the FIT file to be edited
- * @param {number|null} editVal
+ * @param {number|null} editVal new autolock value, or null if reading and not editing
  * @returns {number|null} current setting
  */
 function readOrEditAutoLockSetting(buffer, editVal) {
@@ -1101,7 +1100,8 @@ function reset() {
   // result-error can have indefinitely long text
   // due to fitdecoder errors
   /** @type {HTMLDivElement?} */
-  (document.querySelector(".result-error").querySelector('.alert')).innerText = '---';
+  (document.querySelector(".result-error").querySelector('.alert')).innerText = '&nbsp;';
+  // TODO eliminate dupe code
 
   document.querySelectorAll(".result").forEach(el => {
     el.classList.remove('show');
