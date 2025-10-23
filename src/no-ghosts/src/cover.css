@@ -193,7 +193,8 @@ ol li {
 }
 
 .stacked-grid div.fade {
-  display: block !important;
+  /* display: block !important; */
+  display: none !important;
   visibility: hidden;
 }
 
