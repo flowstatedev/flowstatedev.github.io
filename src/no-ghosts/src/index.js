@@ -735,28 +735,28 @@ function changePoolLengthUnitToMetric(buffer) {
 /**
  *
  * @param {ArrayBuffer} buffer a buffer containing the FIT file to be edited
- * @param {number|null} editVal 
- * @returns {number|null} current setting 
+ * @param {number|null} editVal
+ * @returns {number|null} current setting
  */
 function readOrEditAutoLockSetting(buffer, editVal) {
-  // Message in profile - device settings
+  // Device Setting message - defined in profile
   const deviceSettingsMsgNum = 2;
 
-  // Field in profile
+  // Auto-Lock field - not in profile (reverse engineered from FR955)
   // Type: 1 byte enum
-  /* Values: 
-    0 - autolock off
+  /* Values:
+    0 - off
     1 - always
-    2 - during activity 
-    3 - not during actvity
+    2 - during activity
+    3 - not during activity
   */
-
   const autolockSettingField = 135;
+
   let fieldVal = null
   try {
     const {
       fitType,
-      numberOfEdits,
+      // numberOfEdits,
     } = editFITFile(
       buffer,
       'settings',
@@ -865,35 +865,39 @@ let settingsFilename
  * @this {HTMLButtonElement}
  */
 function onAutolockApply() {
-  const tabname = this.getAttribute("data-tabname")
+  const tabname = this.getAttribute("data-tabname");
   if (tabname) {
     /** @type {HTMLInputElement|null} */
     const radioInput = document.querySelector(`.autolock-${tabname} input[name='autolockRadio']:checked`)
     if (radioInput && settingsFileBuffer && settingsFilename) {
       // console.log(`radio value = ${radioInput.value}`)
       const editVal = radioInput.value
-      console.log(`Preparing to change autolock setting in SETTINGS.FIT file to ${editVal}...`)
+      console.log(`Preparing to change autolock setting in SETTINGS.FIT file to ${editVal}...`);
       const fieldVal = readOrEditAutoLockSetting(settingsFileBuffer, parseInt(editVal, 10))
-      console.log(`new val = ${fieldVal}`)
+      console.log(`new autolock val = ${fieldVal}`);
 
       /** @type {NodeListOf<HTMLAnchorElement>} */
       const links = document.querySelectorAll(".autolock-download");
       links.forEach(link => {
-        link.href = URL.createObjectURL(new Blob([settingsFileBuffer]));
-        const basenameAndExt = getBasenameAndExt(settingsFilename);
-        const newName = basenameAndExt ?
-          `${basenameAndExt[0]}-modified${basenameAndExt[1]}` :
-          settingsFilename;
-        link.innerText = newName;
-        link.download = newName;
-      })
+        if (settingsFileBuffer && settingsFilename) {
+          link.href = URL.createObjectURL(new Blob([settingsFileBuffer]));
+          const basenameAndExt = getBasenameAndExt(settingsFilename);
+          const newName = basenameAndExt ?
+            `${basenameAndExt[0]}-modified${basenameAndExt[1]}` :
+            settingsFilename;
+          link.innerText = newName;
+          link.download = newName;
+        }
+      });
 
       document.querySelectorAll(".autolock-finish").forEach((el) => {
         el.classList.remove("hidden");
         el.classList.add("show");
-      })
+      });
     }
   }
+  settingsFileBuffer = undefined
+  settingsFilename = undefined
 }
 
 /**
@@ -902,6 +906,7 @@ function onAutolockApply() {
  * @returns {Promise<void>}
  */
 async function onFileInputChangeImpl(input) {
+  if (!input.files) return;
   const file = input.files[0];
   if (file) {
     // input.value = null;
@@ -1016,6 +1021,7 @@ async function onFileInputChangeImpl(input) {
             el.innerText = `Current Auto-Lock setting: ${fieldStr}`
           );
 
+          /** @type {NodeListOf<HTMLInputElement>} */
           (document.querySelectorAll(".autolockRadio")).forEach(el => {
             el.removeAttribute("disabled")
             el.checked = false
